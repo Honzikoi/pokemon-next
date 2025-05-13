@@ -2,20 +2,37 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import PokemonCard from "/components/PokemonCard";
 
 export default function Home() {
-
   const [pokemons, setPokemons] = useState([]);
   const [limit, setLimit] = useState(50);        // Number per fetch
   const [page, setPage] = useState(0);           // Pagination index
   const [loading, setLoading] = useState(false); // To prevent multiple fetches
   const loaderRef = useRef();
 
+  // Add debugging state to check API response structure
+  const [apiResponse, setApiResponse] = useState(null);
+
   const fetchPokemons = useCallback(async () => {
     setLoading(true);
-    const res = await fetch(`https://nestjs-pokedex-api.vercel.app/pokemons?limit=${limit}&offset=${page * limit}`);
-    const data = await res.json();
-    setPokemons((prev) => [...prev, ...data]);
-    setPage((prev) => prev + 1);
-    setLoading(false);
+    try {
+      const res = await fetch(`https://nestjs-pokedex-api.vercel.app/pokemons?limit=${limit}&offset=${page * limit}`);
+      const data = await res.json();
+      
+      // Save the API response for debugging
+      if (page === 0) {
+        setApiResponse(data);
+        console.log("API Response:", data);
+      }
+
+      const pokemonList = Array.isArray(data) ? data : 
+                        (data.results || data.pokemons || data.data || []);
+      
+      setPokemons((prev) => [...prev, ...pokemonList]);
+      setPage((prev) => prev + 1);
+    } catch (error) {
+      console.error("Error fetching pokemons:", error);
+    } finally {
+      setLoading(false);
+    }
   }, [limit, page]);
 
   useEffect(() => {
@@ -49,7 +66,7 @@ export default function Home() {
       <h1>Pokémon Gallery</h1>
 
       <label>
-        Pokémons per batch:
+        Pokémons batch filter:
         <select value={limit} onChange={handleLimitChange} style={{ marginLeft: '10px' }}>
           <option value={10}>10</option>
           <option value={25}>25</option>
@@ -64,9 +81,13 @@ export default function Home() {
         gap: "20px",
         marginTop: "20px"
       }}>
-        {pokemons.map((pokemon, index) => (
-          <PokemonCard key={index} pokemon={pokemon} />
-        ))}
+        {pokemons.length > 0 ? (
+          pokemons.map((pokemon, index) => (
+            <PokemonCard key={`pokemon-${index}-${pokemon.id || pokemon.name}`} pokemon={pokemon} />
+          ))
+        ) : (
+          <p>Loading Pokémon data...</p>
+        )}
       </div>
 
       <div ref={loaderRef} style={{ height: "50px", marginTop: "20px" }}>
