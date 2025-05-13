@@ -1,5 +1,5 @@
 export default function PokemonCard({ pokemon }) {
-  // Important: Add this to handle if the component is rendered before the data is fetched
+
   if (!pokemon) {
     return <div>Loading...</div>;
   }
@@ -16,7 +16,7 @@ export default function PokemonCard({ pokemon }) {
       cursor: "pointer",
       backgroundColor: "#fff"
     }}>
-      {/* Check if we have the image property */}
+
       {pokemon.image && (
         <img 
           src={pokemon.image} 
@@ -27,7 +27,6 @@ export default function PokemonCard({ pokemon }) {
         />
       )}
       
-      {/* This makes sure we're accessing the name property safely */}
       <h3 style={{ 
         margin: "5px 0", 
         fontSize: "16px", 
@@ -36,8 +35,7 @@ export default function PokemonCard({ pokemon }) {
       }}>
         {pokemon.name}
       </h3>
-      
-      {/* Only show ID if it exists */}
+
       {pokemon.id && (
         <p style={{ 
           margin: "5px 0", 
